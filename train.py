@@ -20,7 +20,7 @@ class Trainer:
         from dataset import build_augmentations, get_dataset
 
         augs = build_augmentations()
-        self.data_loaders = get_dataset(path, augs)
+        self.data_loaders = get_dataset(path, augs["train"])
     
     def _setup_model(self):
         from model import get_model
@@ -35,9 +35,9 @@ class Trainer:
         self.scheduler = lr_scheduler.StepLR(self.optimizer, step_size=7, gamma=0.1)
 
     def _setup_criterion(self):
-        from torch.nn import CrossEntropyLoss
+        from torch.nn import BCEWithLogitsLoss
 
-        self.criterion = CrossEntropyLoss()
+        self.criterion = BCEWithLogitsLoss()
 
     def _step(self, stage):
         correct_counts = 0
@@ -50,9 +50,9 @@ class Trainer:
 
             self.optimizer.zero_grad()
 
-            predict = self.model(inputs)
+            predict = self.model(inputs).squeeze(-1)
 
-            loss = self.criterion(predict, targets)
+            loss = self.criterion(predict, targets.float())
 
             if stage == "train":
                 loss.backward()
@@ -60,7 +60,7 @@ class Trainer:
 
             running_loss += loss.item() * inputs.size(0)
 
-            _, classes = T.max(predict, 1)
+            classes = T.round(T.sigmoid(predict))
 
             correct_counts += T.sum(classes == targets.data)
 
@@ -112,7 +112,8 @@ class Trainer:
 
                 best_model = copy.deepcopy(self.model)
 
-        T.save(best_model.state_dict, "./best_model.pth")
+        T.save(best_model.state_dict(), "./best_model.pth")
+        T.save(quantized.state_dict(), "./best_model_qint8.pth")
 
         logging.info(f"training finished with the best loss {best_loss}")
            
