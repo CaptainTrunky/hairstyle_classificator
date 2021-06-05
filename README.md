@@ -1,13 +1,16 @@
 
 ***Training***
 
-python train.py train $(realpath ~/workspace/datasets/hair-train/data256x256) 20
+```
 
+python train.py train $(realpath ~/workspace/datasets/hair-train/data256x256) 20
+```
 
 ***Inference***
 
+```
 python inference.py run $(realpath ~/workspace/datasets/hair-val) ./best_model.pth
-
+```
 
 Output path "./results.csv" is hardcoded.
 
