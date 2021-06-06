@@ -113,7 +113,6 @@ class Trainer:
                 best_model = copy.deepcopy(self.model)
 
         T.save(best_model.state_dict(), "./best_model.pth")
-        T.save(quantized.state_dict(), "./best_model_qint8.pth")
 
         logging.info(f"training finished with the best loss {best_loss}")
            
